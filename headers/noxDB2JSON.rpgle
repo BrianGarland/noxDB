@@ -143,8 +143,17 @@
           NodeName       Like(UTF8) const options(*varsize);
         End-PR;
 
-        // Returns 'ON' if node exists and has <> 0
+        // Returns 'ON' if node exists and has value <> 0 and <> false
         Dcl-PR json_isTrue Ind extproc(*CWIDEN : 'nox_IsTrueVC');
+          // Pointer to tree or node
+          pNode          Pointer    value;
+          // Path to node
+          NodeName       Like(UTF8) const options(*varsize);
+        End-PR;
+
+        // Returns 'ON' if node exists and has value <> 0 and <> false
+        // This is an alias from isTrue 
+        Dcl-PR json_getBool  Ind extproc(*CWIDEN : 'nox_IsTrueVC');
           // Pointer to tree or node
           pNode          Pointer    value;
           // Path to node
@@ -372,8 +381,8 @@
           destName       Like(UTF8) const options(*varsize);
           // source node
           pSource        Pointer    value;
-          // source name (or *NULL or '')
-          sourceName     Like(UTF8) const options(*varsize);
+          // source name (or omit if object)
+          sourceName     Like(UTF8) const options(*varsize:*nopass);
         End-PR;
 
 
