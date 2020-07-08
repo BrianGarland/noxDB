@@ -125,18 +125,18 @@
         End-PR;
 
         // Without parameters you will get the last internal error
-        // Otherwise it will format an error object
-I       Dcl-PR jx_GetMessageObject Pointer //Return error description
+        // Otherwise it will format an error object 
+        Dcl-PR jx_GetMessageObject Pointer //Return error description
                                    extproc(*CWIDEN:'jx_GetMessageObject');
-I         MessageId      Pointer    value options(*string:*nopass);
-I         MessageData    Pointer    value options(*string:*nopass);
+          MessageId      Pointer    value options(*string:*nopass);
+          MessageData    Pointer    value options(*string:*nopass);
         End-PR;
 
         // simple courtesy function to return a {"success":true} object
         //Return success:true object
-I       Dcl-PR jx_SuccessTrue Pointer extproc(*CWIDEN:'jx_SuccessTrue');
-I         MessageId      Pointer    value options(*string:*nopass);
-I         MessageData    Pointer    value options(*string:*nopass);
+        Dcl-PR jx_SuccessTrue Pointer extproc(*CWIDEN:'jx_SuccessTrue');
+          MessageId      Pointer    value options(*string:*nopass);
+          MessageData    Pointer    value options(*string:*nopass);
         End-PR;
 
         //Returns pointer to node
@@ -262,6 +262,35 @@ I         MessageData    Pointer    value options(*string:*nopass);
           Value          Ind        value;
         End-PR;
 
+        Dcl-PR jx_SetDate Pointer extproc(*CWIDEN: 'jx_SetDateByName');
+          //Pointer to jx_ tree
+          pNode          Pointer    value;
+          //Location expression to node or attributes
+          Expresion      Pointer    value options(*string);
+          //New value to set / pointer to object
+          Value          date(*ISO)  const;
+        End-PR;
+
+        Dcl-PR jx_SetTime Pointer extproc(*CWIDEN: 'jx_SetTimeByName');
+          //Pointer to jx_ tree
+          pNode          Pointer    value;
+          //Location expression to node or attributes
+          Expresion      Pointer    value options(*string);
+          //New value to set / pointer to object
+          Value          time(*ISO)   const;
+        End-PR;
+
+        Dcl-PR jx_SetTimeStamp Pointer 
+                               extproc(*CWIDEN: 'jx_SetTimeStampByName');
+          //Pointer to jx_ tree
+          pNode          Pointer    value;
+          //Location expression to node or attributes
+          Expresion      Pointer    value options(*string);
+          //New value to set / pointer to object
+          Value          timestamp  const;
+        End-PR;
+
+
         Dcl-PR jx_SetPtr Pointer extproc(*CWIDEN: 'jx_SetPtrByName');
           //Pointer to jx_ tree
           pNode          Pointer    value;
@@ -269,6 +298,8 @@ I         MessageData    Pointer    value options(*string:*nopass);
           Expresion      Pointer    value options(*string);
           //Pointer to anything - You do the cleanup
           Value          Pointer    value;
+          //*ON=Pointer string and stringify, *OFF= Contents is already formated JSON (Default)
+          Stringify      Ind        value options(*nopass);
         End-PR;
 
         Dcl-PR jx_SetProcPtr Pointer extproc(*CWIDEN: 'jx_SetPtrByName');
@@ -279,6 +310,18 @@ I         MessageData    Pointer    value options(*string:*nopass);
           //*ON=String escape, *OFF=If literals
           isString       Ind        value options(*nopass);
         End-PR;
+
+        //         /IF DEFINED(*V7R4M0)
+        //           Dcl-PR jx_Set Pointer overload ( 
+        //             jx_SetBool : 
+        //             jx_SetNum : 
+        //             jx_SetInt :             
+        //             jx_SetDate:
+        //             jx_SetTime:
+        //             jx_SetTimeStamp:
+        //             jx_SetStr
+        //           );
+        //         /ENDIF
 
         Dcl-PR jx_SetValue Pointer extproc(*CWIDEN: 'jx_SetValueByName');
           //Pointer to jx_ tree
@@ -307,10 +350,10 @@ I         MessageData    Pointer    value options(*string:*nopass);
           Defaultvalue   Packed(30:15) value options(*NOPASS);
         End-PR;
 
-I       Dcl-PR jx_GetValueInt Int(20) extproc(*CWIDEN : 'jx_GetNodeValueInt');
-I         pNode          Pointer    value; //Pointer to node
+        Dcl-PR jx_GetValueInt Int(20) extproc(*CWIDEN : 'jx_GetNodeValueInt');
+          pNode          Pointer    value; //Pointer to node
           //If not found - default value
-I         Defaultvalue   Int(20)    value options(*NOPASS);
+          Defaultvalue   Int(20)    value options(*NOPASS);
         End-PR;
 
         Dcl-PR jx_GetValuePtr Pointer extproc(*CWIDEN : 'jx_GetNodeValuePtr');
@@ -384,6 +427,42 @@ I         Defaultvalue   Int(20)    value options(*NOPASS);
           Defaultvalue   Int(20)    value options(*nopass);
         End-PR;
 
+        Dcl-PR jx_GetBool ind extproc(*CWIDEN : 'jx_GetValueBool');
+          //Pointer to relative node
+          pNode          Pointer    value;
+          //Locations expression to node
+          Expression     Pointer    value options(*string:*nopass);
+          //If not found - default value
+          Defaultvalue   ind        value options(*nopass);
+        End-PR;
+
+        Dcl-PR jx_GetDate date(*ISO)  extproc(*CWIDEN : 'jx_GetValueDate');
+          //Pointer to relative node
+          pNode          Pointer    value;
+          //Locations expression to node
+          Expression     Pointer    value options(*string:*nopass);
+          //If not found - default value
+          Defaultvalue   date(*ISO)    value options(*nopass);
+        End-PR;
+
+        Dcl-PR jx_GetTime Time(*ISO)  extproc(*CWIDEN : 'jx_GetValueTime');
+          //Pointer to relative node
+          pNode          Pointer    value;
+          //Locations expression to node
+          Expression     Pointer    value options(*string:*nopass);
+          //If not found - default value
+          Defaultvalue   Time(*ISO)    value options(*nopass);
+        End-PR;
+
+        Dcl-PR jx_GetTimeStamp TimeStamp  
+                               extproc(*CWIDEN : 'jx_GetValueTimeStamp');
+          //Pointer to relative node
+          pNode          Pointer    value;
+          //Locations expression to node
+          Expression     Pointer    value options(*string:*nopass);
+          //If not found - default value
+          Defaultvalue   TimeStamp    value options(*nopass);
+        End-PR;
         //Set an ILOB object to a value found by X
         //Return *ON if found
         Dcl-PR jx_GetIlobValue Ind extproc(*CWIDEN :'ILOB_XmlGetValue');
@@ -747,7 +826,7 @@ I         Defaultvalue   Int(20)    value options(*NOPASS);
           Defaultvalue   Pointer    value options(*string:*nopass);
         End-PR;
 
-        Dcl-PR jx_SetAttrValue extproc(*CWIDEN : 'jx_SetAttrValue');
+        Dcl-PR jx_SetAttrValue extproc(*CWIDEN : 'jx_SetNodeAttrValue');
           //Pointer Attribute
           pAttr          Pointer    value;
           //New value
@@ -1003,6 +1082,12 @@ I         Defaultvalue   Int(20)    value options(*NOPASS);
       // you can supply an extr eye-catch wariable :trcid
         Dcl-PR jx_traceSetId  extproc(*CWIDEN : 'jx_traceSetId');
           traceId        Int(20)    value; //Ccsid of inpur file
+        End-PR;
+
+      // courtesy joblog tool
+        Dcl-PR jx_joblog  extproc(*CWIDEN : 'jx_joblog'); 
+          //Format string 
+          msg            Pointer    value options(*string);
         End-PR;
 
       // --------------------------------------------------------------------------------------------------------------

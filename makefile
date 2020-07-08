@@ -11,14 +11,15 @@
 BIN_LIB=NOXDB
 DBGVIEW=*ALL
 TARGET_CCSID=*JOB
+TARGET_RLS=V7R1M0
 
 # Do not touch below
 INCLUDE='/QIBM/include' 'headers/' 'headers/ext/'
 
-CCFLAGS=OPTIMIZE(10) ENUM(*INT) TERASPACE(*YES) STGMDL(*INHERIT) SYSIFCOPT(*IFSIO) INCDIR($(INCLUDE)) DBGVIEW($(DBGVIEW)) TGTCCSID($(TARGET_CCSID))
+CCFLAGS=OPTIMIZE(10) ENUM(*INT) TERASPACE(*YES) STGMDL(*INHERIT) SYSIFCOPT(*IFSIO) INCDIR($(INCLUDE)) DBGVIEW($(DBGVIEW)) TGTCCSID($(TARGET_CCSID)) TGTRLS($(TARGET_RLS))
 
 # For current compile:
-CCFLAGS2=OPTION(*STDLOGMSG) OUTPUT(*NONE) OPTIMIZE(10) ENUM(*INT) TERASPACE(*YES) STGMDL(*INHERIT) SYSIFCOPT(*IFSIO) DBGVIEW(*ALL) INCDIR($(INCLUDE)) 
+CCFLAGS2=OPTION(*STDLOGMSG) OUTPUT(*NONE) OPTIMIZE(10) ENUM(*INT) TERASPACE(*YES) STGMDL(*INHERIT) SYSIFCOPT(*IFSIO) DBGVIEW(*ALL) INCDIR($(INCLUDE)) TGTRLS($(TARGET_RLS))
 
 #
 # User-defined part end
@@ -55,7 +56,7 @@ noxdb.bnddir: jsonxml.entry
 	system -q "CHGATR OBJ('src/$*.clle') ATR(*CCSID) VALUE(1252)"
 	-system -q "CRTSRCPF FILE($(BIN_LIB)/QCLLESRC) RCDLEN(132)"
 	system "CPYFRMSTMF FROMSTMF('src/$*.clle') TOMBR('/QSYS.lib/$(BIN_LIB).lib/QCLLESRC.file/$(notdir $*).mbr') MBROPT(*ADD)"
-	system "CRTCLMOD MODULE($(BIN_LIB)/$(notdir $*)) SRCFILE($(BIN_LIB)/QCLLESRC) DBGVIEW($(DBGVIEW))"
+	system "CRTCLMOD MODULE($(BIN_LIB)/$(notdir $*)) SRCFILE($(BIN_LIB)/QCLLESRC) DBGVIEW($(DBGVIEW)) TGTRLS($(TARGET_RLS))"
 
 %.srvpgm:
 	-system -q "CRTSRCPF FILE($(BIN_LIB)/QSRVSRC) RCDLEN(132)"
@@ -64,7 +65,7 @@ noxdb.bnddir: jsonxml.entry
 	# You may be wondering what this ugly string is. It's a list of objects created from the dep list that end with .c or .clle.
 	$(eval modules := $(patsubst %,$(BIN_LIB)/%,$(basename $(filter %.c %.clle,$(notdir $^)))))
 	
-	system -q -kpieb "CRTSRVPGM SRVPGM($(BIN_LIB)/$*) MODULE($(modules)) SRCFILE($(BIN_LIB)/QSRVSRC) ACTGRP(QILE) ALWLIBUPD(*YES) TGTRLS(*current)"
+	system -q -kpieb "CRTSRVPGM SRVPGM($(BIN_LIB)/$*) MODULE($(modules)) SRCFILE($(BIN_LIB)/QSRVSRC) ACTGRP(QILE) ALWLIBUPD(*YES) TGTRLS($(TARGET_RLS))"
 
 hdr:
 	sed "s/ jx_/ json_/g; s/ JX_/ json_/g" headers/JSONXML.rpgle > headers/JSONPARSER.rpgle
@@ -75,6 +76,8 @@ hdr:
   
 	system "CPYFRMSTMF FROMSTMF('headers/JSONPARSER.rpgle') TOMBR('/QSYS.lib/$(BIN_LIB).lib/QRPGLEREF.file/JSONPARSER.mbr') MBROPT(*REPLACE)"
 	system "CPYFRMSTMF FROMSTMF('headers/XMLPARSER.rpgle') TOMBR('/QSYS.lib/$(BIN_LIB).lib/QRPGLEREF.file/XMLPARSER.mbr') MBROPT(*REPLACE)"
+	system "CPYFRMSTMF FROMSTMF('headers/JSONPARSER.rpgle') TOMBR('/QSYS.lib/$(BIN_LIB).lib/QRPGLEREF.file/NOXDB.mbr') MBROPT(*REPLACE)"
+	system "CPYFRMSTMF FROMSTMF('headers/XMLPARSER.rpgle') TOMBR('/QSYS.lib/$(BIN_LIB).lib/QRPGLEREF.file/NOXDB.mbr') MBROPT(*ADD)"
 	system "CPYFRMSTMF FROMSTMF('headers/jsonxml.h') TOMBR('/QSYS.lib/$(BIN_LIB).lib/H.file/JSONXML.mbr') MBROPT(*REPLACE)"
 
 all:
@@ -105,6 +108,7 @@ release: clean
 # For vsCode / single file then i.e.: gmake current sqlio.c  
 current: 
 	system -i "CRTCMOD MODULE($(BIN_LIB)/$(SRC)) SRCSTMF('src/$(SRC).c') $(CCFLAGS2) "
+	system -i "UPDSRVPGM SRVPGM($(BIN_LIB)/JSONXML) MODULE($(BIN_LIB)/*ALL)  
 
 # For vsCode / single file then i.e.: gmake current sqlio.c  
 example: 
